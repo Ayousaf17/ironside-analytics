@@ -16,15 +16,13 @@ interface TagTrendsChartProps {
   data: PulseCheck[];
 }
 
+// Colorblind-friendly qualitative palette (Set2-inspired) — categories need distinct colors
 const TAG_COLORS = [
-  '#3b82f6',
-  '#22c55e',
-  '#f97316',
-  '#8b5cf6',
-  '#ef4444',
-  '#14b8a6',
-  '#eab308',
-  '#ec4899',
+  '#66c2a5', // teal
+  '#fc8d62', // salmon
+  '#8da0cb', // periwinkle
+  '#e78ac3', // pink
+  '#a6d854', // lime
 ];
 
 export default function TagTrendsChart({ data }: TagTrendsChartProps) {
@@ -76,7 +74,7 @@ export default function TagTrendsChart({ data }: TagTrendsChartProps) {
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 12 }}

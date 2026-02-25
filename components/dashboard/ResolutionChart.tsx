@@ -39,7 +39,7 @@ export default function ResolutionChart({ data }: ResolutionChartProps) {
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
             <XAxis
               dataKey="date"
               tick={{ fontSize: 12 }}
@@ -65,7 +65,7 @@ export default function ResolutionChart({ data }: ResolutionChartProps) {
               type="monotone"
               dataKey="avg"
               name="Avg"
-              stroke="#3b82f6"
+              stroke="#93c5fd"
               strokeWidth={2}
               dot={{ r: 3 }}
               activeDot={{ r: 5 }}
@@ -74,7 +74,7 @@ export default function ResolutionChart({ data }: ResolutionChartProps) {
               type="monotone"
               dataKey="p50"
               name="P50"
-              stroke="#22c55e"
+              stroke="#3b82f6"
               strokeWidth={2}
               dot={{ r: 3 }}
               activeDot={{ r: 5 }}
@@ -83,7 +83,7 @@ export default function ResolutionChart({ data }: ResolutionChartProps) {
               type="monotone"
               dataKey="p90"
               name="P90"
-              stroke="#f97316"
+              stroke="#1e3a5f"
               strokeWidth={2}
               dot={{ r: 3 }}
               activeDot={{ r: 5 }}

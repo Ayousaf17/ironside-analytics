@@ -43,7 +43,7 @@ export default function TopCategories({ data }: TopCategoriesProps) {
               data={chartData}
               margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" />
               <XAxis type="number" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis
                 dataKey="name"

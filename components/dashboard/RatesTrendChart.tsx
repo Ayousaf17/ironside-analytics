@@ -49,7 +49,7 @@ export default function RatesTrendChart({ data }: RatesTrendChartProps) {
                 <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
             <XAxis
               dataKey="date"
               tick={{ fontSize: 12 }}

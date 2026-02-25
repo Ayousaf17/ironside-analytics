@@ -16,30 +16,20 @@ interface WorkloadChartProps {
   data: PulseCheck[];
 }
 
-// Consistent color palette for agents
-const AGENT_COLORS: Record<string, string> = {
-  Unassigned: '#9ca3af',
-  'Danni-Jean': '#3b82f6',
-  Spencer: '#22c55e',
-  Gabe: '#f97316',
-  Tyler: '#8b5cf6',
-  Alex: '#ec4899',
-  Jordan: '#14b8a6',
-  Morgan: '#eab308',
-  Casey: '#6366f1',
-  Riley: '#ef4444',
-};
-
-const FALLBACK_COLORS = [
-  '#06b6d4',
-  '#84cc16',
-  '#f43f5e',
-  '#a855f7',
-  '#0ea5e9',
-  '#d946ef',
-  '#10b981',
-  '#f59e0b',
+// Colorblind-friendly qualitative palette (Set2-inspired)
+// Unassigned always grey; agents get distinct qualitative colors
+const QUALITATIVE_PALETTE = [
+  '#66c2a5', // teal
+  '#fc8d62', // salmon
+  '#8da0cb', // periwinkle
+  '#e78ac3', // pink
+  '#a6d854', // lime
+  '#ffd92f', // gold
+  '#e5c494', // tan
+  '#b3b3b3', // grey (fallback)
 ];
+
+const UNASSIGNED_COLOR = '#9ca3af'; // grey — always for unassigned
 
 export default function WorkloadChart({ data }: WorkloadChartProps) {
   // Sort data chronologically
@@ -77,14 +67,18 @@ export default function WorkloadChart({ data }: WorkloadChartProps) {
     return entry;
   });
 
-  // Assign colors
-  let fallbackIndex = 0;
-  const getColor = (agent: string): string => {
-    if (AGENT_COLORS[agent]) return AGENT_COLORS[agent];
-    const color = FALLBACK_COLORS[fallbackIndex % FALLBACK_COLORS.length];
-    fallbackIndex++;
-    return color;
-  };
+  // Assign colors: grey for Unassigned, qualitative palette for agents (by index)
+  const agentColorMap = new Map<string, string>();
+  let colorIdx = 0;
+  agentList.forEach((agent) => {
+    if (agent === 'Unassigned') {
+      agentColorMap.set(agent, UNASSIGNED_COLOR);
+    } else {
+      agentColorMap.set(agent, QUALITATIVE_PALETTE[colorIdx % QUALITATIVE_PALETTE.length]);
+      colorIdx++;
+    }
+  });
+  const getColor = (agent: string): string => agentColorMap.get(agent) || '#b3b3b3';
 
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -100,7 +94,7 @@ export default function WorkloadChart({ data }: WorkloadChartProps) {
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 12 }}

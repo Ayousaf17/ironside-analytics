@@ -47,7 +47,7 @@ export default function P90TrendChart({ data }: P90TrendChartProps) {
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 12 }}
@@ -85,9 +85,9 @@ export default function P90TrendChart({ data }: P90TrendChartProps) {
                 type="monotone"
                 dataKey="p90"
                 name="P90"
-                stroke="#f97316"
+                stroke="#1e3a5f"
                 strokeWidth={2.5}
-                dot={{ r: 4, fill: '#f97316' }}
+                dot={{ r: 4, fill: '#1e3a5f' }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>

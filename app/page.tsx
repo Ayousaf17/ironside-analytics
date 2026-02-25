@@ -257,7 +257,7 @@ export default function SupportCommandCenter() {
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={dailyTrends}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                       <XAxis
                         dataKey="date"
                         tick={{ fontSize: 12 }}
@@ -267,7 +267,7 @@ export default function SupportCommandCenter() {
                       <YAxis
                         yAxisId="left"
                         orientation="left"
-                        stroke="#8884d8"
+                        stroke="#9ca3af"
                         tick={{ fontSize: 12 }}
                         tickLine={false}
                         axisLine={false}
@@ -275,7 +275,7 @@ export default function SupportCommandCenter() {
                       <YAxis
                         yAxisId="right"
                         orientation="right"
-                        stroke="#82ca9d"
+                        stroke="#9ca3af"
                         tick={{ fontSize: 12 }}
                         tickLine={false}
                         axisLine={false}
@@ -294,7 +294,7 @@ export default function SupportCommandCenter() {
                         yAxisId="right"
                         dataKey="cost_display"
                         name="Cost ($)"
-                        fill="#22c55e"
+                        fill="#16a34a"
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>
@@ -323,6 +323,7 @@ export default function SupportCommandCenter() {
                         strokeDasharray="3 3"
                         horizontal={true}
                         vertical={false}
+                        stroke="#e5e7eb"
                       />
                       <XAxis type="number" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -335,7 +336,7 @@ export default function SupportCommandCenter() {
                       <Bar
                         dataKey="usage_count"
                         name="Usage Count"
-                        fill="#8884d8"
+                        fill="#3b82f6"
                         radius={[0, 4, 4, 0]}
                         barSize={30}
                       />
