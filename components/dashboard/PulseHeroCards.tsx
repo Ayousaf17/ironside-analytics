@@ -34,9 +34,10 @@ interface MetricCardProps {
   /** Whether an increase in this metric is "good" (true) or "bad" (false) */
   increaseIsGood: boolean;
   isBad: boolean;
+  trendLabel?: string;
 }
 
-function MetricCard({ label, value, delta, increaseIsGood, isBad }: MetricCardProps) {
+function MetricCard({ label, value, delta, increaseIsGood, isBad, trendLabel }: MetricCardProps) {
   const numericDelta = parseFloat(delta);
   const isPositive = numericDelta > 0;
   const isNegative = numericDelta < 0;
@@ -63,14 +64,19 @@ function MetricCard({ label, value, delta, increaseIsGood, isBad }: MetricCardPr
       <div className="mt-2 flex items-end gap-3">
         <span className="text-2xl font-bold text-gray-900">{value}</span>
         {delta !== '' && (
-          <span className={`flex items-center gap-1 text-sm font-medium ${arrowColor}`}>
-            {isPositive ? (
-              <TrendingUp className="h-4 w-4" />
-            ) : isNegative ? (
-              <TrendingDown className="h-4 w-4" />
-            ) : null}
-            {delta}
-          </span>
+          <div className="flex flex-col">
+            <span className={`flex items-center gap-1 text-sm font-medium ${arrowColor}`}>
+              {isPositive ? (
+                <TrendingUp className="h-4 w-4" />
+              ) : isNegative ? (
+                <TrendingDown className="h-4 w-4" />
+              ) : null}
+              {delta}
+            </span>
+            {trendLabel && (
+              <span className="text-[10px] text-gray-400 font-normal">{trendLabel}</span>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -104,6 +110,7 @@ export default function PulseHeroCards({ latest, previous }: PulseHeroCardsProps
         delta={unassignedDelta}
         increaseIsGood={false}
         isBad={latest.unassigned_pct > 40}
+        trendLabel={previous ? 'WoW' : undefined}
       />
       <MetricCard
         label="Spam Rate"
@@ -111,6 +118,7 @@ export default function PulseHeroCards({ latest, previous }: PulseHeroCardsProps
         delta={spamDelta}
         increaseIsGood={false}
         isBad={latest.spam_pct > 25}
+        trendLabel={previous ? 'WoW' : undefined}
       />
       <MetricCard
         label="Avg Resolution"
@@ -118,6 +126,7 @@ export default function PulseHeroCards({ latest, previous }: PulseHeroCardsProps
         delta={resDelta ? `${resDelta}m` : ''}
         increaseIsGood={false}
         isBad={false}
+        trendLabel={previous ? 'WoW' : undefined}
       />
       <MetricCard
         label="Open Tickets"
@@ -125,6 +134,7 @@ export default function PulseHeroCards({ latest, previous }: PulseHeroCardsProps
         delta={openDelta}
         increaseIsGood={false}
         isBad={false}
+        trendLabel={previous ? 'WoW' : undefined}
       />
     </div>
   );

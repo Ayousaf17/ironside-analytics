@@ -57,8 +57,27 @@ interface IntentDist {
   usage_count: number;
 }
 
+type TimePeriod = '7d' | '30d' | '90d' | 'all';
+
+function filterByPeriod(data: PulseCheck[], period: TimePeriod): PulseCheck[] {
+  if (period === 'all') return data;
+  const now = new Date();
+  const daysMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90 };
+  const cutoff = new Date(now.getTime() - daysMap[period] * 86400000);
+  return data.filter((p) => new Date(p.created_at) >= cutoff);
+}
+
+function formatDateRange(start: string, end: string): string {
+  const s = new Date(start);
+  const e = new Date(end);
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  const yearOpts: Intl.DateTimeFormatOptions = { ...opts, year: 'numeric' };
+  return `${s.toLocaleDateString('en-US', opts)} - ${e.toLocaleDateString('en-US', yearOpts)}`;
+}
+
 export default function SupportCommandCenter() {
   const [activeTab, setActiveTab] = useState('operations');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('30d');
 
   // --- Pulse Check State ---
   const [pulseData, setPulseData] = useState<PulseCheck[]>([]);
@@ -122,8 +141,15 @@ export default function SupportCommandCenter() {
   }, []);
 
   // --- Derived data for Operations tab ---
+  const filteredPulseData = filterByPeriod(pulseData, timePeriod);
   const latestPulse = pulseData.length > 0 ? pulseData[0] : null;
   const previousPulse = pulseData.length > 1 ? pulseData[1] : null;
+
+  // Date context
+  const dateRangeLabel = latestPulse
+    ? formatDateRange(latestPulse.date_range_start, latestPulse.date_range_end)
+    : '';
+  const pulseCount = filteredPulseData.length;
 
   // --- AI Performance calculations ---
   const routerStats = healthData.find((w) => w.workflow_id === 'NGGnOS5zS3pzBSx7') || {
@@ -158,11 +184,40 @@ export default function SupportCommandCenter() {
             <h1 className="text-3xl font-bold text-gray-900">
               Ironside Support Command Center
             </h1>
-            <p className="text-gray-500 mt-1">
-              Live support operations insights for Ironside Computers
-            </p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-gray-500">
+                Live support operations insights for Ironside Computers
+              </p>
+              {dateRangeLabel && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Latest: {dateRangeLabel}
+                </span>
+              )}
+            </div>
           </div>
-          <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <div className="flex flex-col items-end gap-2">
+            <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+            {(activeTab === 'operations' || activeTab === 'deep-dive') && (
+              <div className="inline-flex items-center gap-1 rounded-full bg-gray-100 p-0.5 text-xs">
+                {(['7d', '30d', '90d', 'all'] as TimePeriod[]).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setTimePeriod(period)}
+                    className={`rounded-full px-3 py-1 font-medium transition-all duration-200 ${
+                      timePeriod === period
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {period === 'all' ? 'All' : period.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* TAB CONTENT */}
@@ -183,13 +238,26 @@ export default function SupportCommandCenter() {
               </div>
             ) : (
               <>
-                {/* Row 1: Hero Cards */}
+                {/* Date context bar */}
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>
+                    Showing {pulseCount} pulse check{pulseCount !== 1 ? 's' : ''}
+                    {timePeriod !== 'all' ? ` from last ${timePeriod === '7d' ? '7 days' : timePeriod === '30d' ? '30 days' : '90 days'}` : ''}
+                  </span>
+                  {latestPulse && (
+                    <span>
+                      Last updated: {new Date(latestPulse.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                  )}
+                </div>
+
+                {/* Row 1: Hero Cards (always shows latest + WoW delta) */}
                 <PulseHeroCards latest={latestPulse} previous={previousPulse} />
 
-                {/* Row 2: Resolution + Rates Charts */}
+                {/* Row 2: Resolution + Rates Charts (filtered by time period) */}
                 <div className="grid gap-8 md:grid-cols-2">
-                  <ResolutionChart data={pulseData} />
-                  <RatesTrendChart data={pulseData} />
+                  <ResolutionChart data={filteredPulseData} />
+                  <RatesTrendChart data={filteredPulseData} />
                 </div>
 
                 {/* Row 3: Top Categories + Ops Notes */}
@@ -446,17 +514,25 @@ export default function SupportCommandCenter() {
               </div>
             ) : (
               <>
+                {/* Date context bar */}
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>
+                    Analyzing {pulseCount} pulse check{pulseCount !== 1 ? 's' : ''}
+                    {timePeriod !== 'all' ? ` from last ${timePeriod === '7d' ? '7 days' : timePeriod === '30d' ? '30 days' : '90 days'}` : ''}
+                  </span>
+                </div>
+
                 {/* Row 1: Workload Chart (full width) */}
-                <WorkloadChart data={pulseData} />
+                <WorkloadChart data={filteredPulseData} />
 
                 {/* Row 2: Tag Trends + P90 Trend */}
                 <div className="grid gap-8 md:grid-cols-2">
-                  <TagTrendsChart data={pulseData} />
-                  <P90TrendChart data={pulseData} />
+                  <TagTrendsChart data={filteredPulseData} />
+                  <P90TrendChart data={filteredPulseData} />
                 </div>
 
-                {/* Row 3: Ops Notes History (full width) */}
-                <OpsNotesHistory data={pulseData} />
+                {/* Row 3: Ops Notes History (full width — always shows all) */}
+                <OpsNotesHistory data={filteredPulseData} />
               </>
             )}
           </div>
