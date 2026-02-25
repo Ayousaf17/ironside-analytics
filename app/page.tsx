@@ -168,23 +168,40 @@ export default function SupportCommandCenter() {
         {/* TAB CONTENT */}
         {activeTab === 'operations' && (
           <div className="space-y-8">
-            {/* Row 1: Hero Cards */}
-            <PulseHeroCards latest={latestPulse} previous={previousPulse} />
+            {pulseData.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
+                <div className="mx-auto w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Pulse Check Data Yet</h3>
+                <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  Pulse check data will appear here once the n8n workflow runs and persists analytics to Supabase.
+                  Trigger a pulse check via Slack to generate the first data point.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Row 1: Hero Cards */}
+                <PulseHeroCards latest={latestPulse} previous={previousPulse} />
 
-            {/* Row 2: Resolution + Rates Charts */}
-            <div className="grid gap-8 md:grid-cols-2">
-              <ResolutionChart data={pulseData} />
-              <RatesTrendChart data={pulseData} />
-            </div>
+                {/* Row 2: Resolution + Rates Charts */}
+                <div className="grid gap-8 md:grid-cols-2">
+                  <ResolutionChart data={pulseData} />
+                  <RatesTrendChart data={pulseData} />
+                </div>
 
-            {/* Row 3: Top Categories + Ops Notes */}
-            <div className="grid gap-8 md:grid-cols-2">
-              <TopCategories data={latestPulse?.top_questions || []} />
-              <OpsNotes
-                notes={latestPulse?.ops_notes || []}
-                timestamp={latestPulse?.created_at || ''}
-              />
-            </div>
+                {/* Row 3: Top Categories + Ops Notes */}
+                <div className="grid gap-8 md:grid-cols-2">
+                  <TopCategories data={latestPulse?.top_questions || []} />
+                  <OpsNotes
+                    notes={latestPulse?.ops_notes || []}
+                    timestamp={latestPulse?.created_at || ''}
+                  />
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -413,17 +430,34 @@ export default function SupportCommandCenter() {
 
         {activeTab === 'deep-dive' && (
           <div className="space-y-8">
-            {/* Row 1: Workload Chart (full width) */}
-            <WorkloadChart data={pulseData} />
+            {pulseData.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
+                <div className="mx-auto w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Deep Dive Data Yet</h3>
+                <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  Deep dive analytics will populate after pulse checks start flowing.
+                  Workload trends, tag analysis, and ops notes history need at least one pulse check to display.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Row 1: Workload Chart (full width) */}
+                <WorkloadChart data={pulseData} />
 
-            {/* Row 2: Tag Trends + P90 Trend */}
-            <div className="grid gap-8 md:grid-cols-2">
-              <TagTrendsChart data={pulseData} />
-              <P90TrendChart data={pulseData} />
-            </div>
+                {/* Row 2: Tag Trends + P90 Trend */}
+                <div className="grid gap-8 md:grid-cols-2">
+                  <TagTrendsChart data={pulseData} />
+                  <P90TrendChart data={pulseData} />
+                </div>
 
-            {/* Row 3: Ops Notes History (full width) */}
-            <OpsNotesHistory data={pulseData} />
+                {/* Row 3: Ops Notes History (full width) */}
+                <OpsNotesHistory data={pulseData} />
+              </>
+            )}
           </div>
         )}
       </div>
