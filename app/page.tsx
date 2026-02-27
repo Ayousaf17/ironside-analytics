@@ -93,6 +93,7 @@ export default function SupportCommandCenter() {
 
   useEffect(() => {
     const fetchData = async () => {
+      try {
       const supabase = createClient();
 
       // --- Fetch Pulse Checks ---
@@ -135,6 +136,10 @@ export default function SupportCommandCenter() {
       if (intents) setIntentDist(intents);
 
       setLoading(false);
+      } catch (err) {
+        console.error('Dashboard fetch error:', err);
+        setLoading(false);
+      }
     };
 
     fetchData();
