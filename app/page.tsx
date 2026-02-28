@@ -24,6 +24,7 @@ import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import TagTrendsChart from '@/components/dashboard/TagTrendsChart';
 import P90TrendChart from '@/components/dashboard/P90TrendChart';
 import OpsNotesHistory from '@/components/dashboard/OpsNotesHistory';
+import TicketFlowPanel from '@/components/dashboard/TicketFlowPanel';
 
 // --- AI PERFORMANCE TYPES ---
 interface ROIMetrics {
@@ -292,12 +293,19 @@ export default function SupportCommandCenter() {
                   <RatesTrendChart data={filteredPulseData} />
                 </div>
 
-                {/* Row 3: Top Categories + Ops Notes */}
+                {/* Row 3: Ticket Flow Panel (full width) */}
+                <TicketFlowPanel pulse={latestPulse} />
+
+                {/* Row 4: Top Categories + Ops Notes */}
                 <div className="grid gap-8 md:grid-cols-2">
-                  <TopCategories data={latestPulse?.top_questions || []} />
+                  <TopCategories
+                    data={latestPulse?.top_questions || []}
+                    previousData={previousPulse?.top_questions}
+                  />
                   <OpsNotes
                     notes={latestPulse?.ops_notes || []}
                     timestamp={latestPulse?.created_at || ''}
+                    pulse={latestPulse ?? undefined}
                   />
                 </div>
               </>

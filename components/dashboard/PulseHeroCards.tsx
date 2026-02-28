@@ -83,6 +83,56 @@ function MetricCard({ label, value, delta, increaseIsGood, isBad, trendLabel }: 
   );
 }
 
+interface TrueQueueCardProps {
+  trueUnassigned: number;
+  delta: string;
+  subtitle: string;
+  isBad: boolean;
+  trendLabel?: string;
+}
+
+function TrueQueueCard({ trueUnassigned, delta, subtitle, isBad, trendLabel }: TrueQueueCardProps) {
+  const numericDelta = parseFloat(delta);
+  const isPositive = numericDelta > 0;
+  const isNegative = numericDelta < 0;
+  const isNeutral = delta === '' || numericDelta === 0;
+  // For queue depth: decrease is good (fewer unassigned tickets)
+  const changeIsFavorable = isNegative;
+
+  const arrowColor = isNeutral
+    ? 'text-gray-400'
+    : changeIsFavorable
+    ? 'text-green-600'
+    : 'text-red-500';
+
+  const bgClass = isBad ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200';
+
+  return (
+    <div className={`p-6 rounded-xl border shadow-sm ${bgClass}`}>
+      <h3 className="text-sm font-medium text-gray-500">True Queue Depth</h3>
+      <div className="mt-2 flex items-end gap-3">
+        <span className="text-2xl font-bold text-gray-900">{trueUnassigned}</span>
+        {delta !== '' && (
+          <div className="flex flex-col">
+            <span className={`flex items-center gap-1 text-sm font-medium ${arrowColor}`}>
+              {isPositive ? (
+                <TrendingUp className="h-4 w-4" />
+              ) : isNegative ? (
+                <TrendingDown className="h-4 w-4" />
+              ) : null}
+              {delta}
+            </span>
+            {trendLabel && (
+              <span className="text-[10px] text-gray-400 font-normal">{trendLabel}</span>
+            )}
+          </div>
+        )}
+      </div>
+      <p className="mt-1 text-[11px] text-gray-400 leading-snug">{subtitle}</p>
+    </div>
+  );
+}
+
 export default function PulseHeroCards({ latest, previous }: PulseHeroCardsProps) {
   if (!latest) {
     return (
@@ -97,19 +147,33 @@ export default function PulseHeroCards({ latest, previous }: PulseHeroCardsProps
     );
   }
 
-  const unassignedDelta = formatDelta(latest.unassigned_pct, previous?.unassigned_pct);
+  // True Queue Depth — excludes spam that's auto-closing from "unassigned"
+  const rawUnassigned = latest.workload['Unassigned'] ?? 0;
+  const autoCloseCount = latest.tags['auto-close'] ?? 0;
+  const trueUnassigned = Math.max(0, rawUnassigned - autoCloseCount);
+
+  const prevRawUnassigned = previous?.workload['Unassigned'] ?? 0;
+  const prevAutoCloseCount = previous?.tags['auto-close'] ?? 0;
+  const prevTrueUnassigned = previous ? Math.max(0, prevRawUnassigned - prevAutoCloseCount) : undefined;
+
+  const trueQueueDelta = formatDelta(trueUnassigned, prevTrueUnassigned, 0);
+  const trueQueueSubtitle =
+    autoCloseCount > 0
+      ? `${rawUnassigned} flagged unassigned — ${autoCloseCount} are just spam taking a nap`
+      : `${rawUnassigned} total unassigned`;
+
   const spamDelta = formatDelta(latest.spam_pct, previous?.spam_pct);
   const resDelta = formatDelta(latest.resolution_avg_min, previous?.resolution_avg_min, 0);
   const openDelta = formatDelta(latest.open_count, previous?.open_count, 0);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <MetricCard
-        label="Unassigned %"
-        value={`${latest.unassigned_pct.toFixed(1)}%`}
-        delta={unassignedDelta}
-        increaseIsGood={false}
-        isBad={latest.unassigned_pct > 40}
+      {/* Card 1: True Queue Depth (replaces raw Unassigned %) */}
+      <TrueQueueCard
+        trueUnassigned={trueUnassigned}
+        delta={trueQueueDelta}
+        subtitle={trueQueueSubtitle}
+        isBad={trueUnassigned > 15}
         trendLabel={previous ? 'WoW' : undefined}
       />
       <MetricCard
