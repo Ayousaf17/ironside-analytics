@@ -25,6 +25,7 @@ import TagTrendsChart from '@/components/dashboard/TagTrendsChart';
 import P90TrendChart from '@/components/dashboard/P90TrendChart';
 import OpsNotesHistory from '@/components/dashboard/OpsNotesHistory';
 import TicketFlowPanel from '@/components/dashboard/TicketFlowPanel';
+import AgentBehaviorTab, { type AgentBehaviorLog } from '@/components/dashboard/AgentBehaviorTab';
 
 // --- AI PERFORMANCE TYPES ---
 interface ROIMetrics {
@@ -89,6 +90,9 @@ export default function SupportCommandCenter() {
   const [topIssues, setTopIssues] = useState<TopIssue[]>([]);
   const [dailyTrends, setDailyTrends] = useState<DailyTrend[]>([]);
   const [intentDist, setIntentDist] = useState<IntentDist[]>([]);
+
+  // --- Agent Behavior State ---
+  const [behaviorLogs, setBehaviorLogs] = useState<AgentBehaviorLog[]>([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -162,6 +166,14 @@ export default function SupportCommandCenter() {
 
       const { data: intents } = await supabase.from('view_ai_intent_distribution').select('*');
       if (intents) setIntentDist(intents);
+
+      // --- Fetch Agent Behavior Logs ---
+      const { data: behaviorData } = await supabase
+        .from('agent_behavior_log')
+        .select('id, created_at, event_type, ticket_id, ticket_subject, ticket_channel, ticket_category, ticket_tags, agent_name, agent_email, response_char_count, is_macro, macro_name, message_position, time_to_first_response_min, touches_to_resolution, csat_score, resolved_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (behaviorData) setBehaviorLogs(behaviorData);
 
       setLoading(false);
       } catch (err) {
@@ -311,6 +323,10 @@ export default function SupportCommandCenter() {
               </>
             )}
           </div>
+        )}
+
+        {activeTab === 'agent-behavior' && (
+          <AgentBehaviorTab logs={behaviorLogs} />
         )}
 
         {activeTab === 'ai-performance' && (
