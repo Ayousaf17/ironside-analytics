@@ -62,7 +62,10 @@ export async function POST(req: NextRequest) {
     switch (event_type) {
       case 'ticket-message-created': {
         if (!ticket || !message) break;
-        if (!isAgentMessage(message)) break; // skip customer messages and rule-fires
+        // isAgentMessage filter temporarily disabled — logging all messages to
+        // inspect raw_payload and confirm what source.type Gorgias sends
+        // TODO: re-enable once source type values are confirmed
+        // if (!isAgentMessage(message)) break;
 
         // Count prior agent replies for position tracking and first-reply detection
         const { data: existing } = await supabase
