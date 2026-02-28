@@ -30,6 +30,13 @@ function diffMinutes(start: string, end: string): number {
   return (new Date(end).getTime() - new Date(start).getTime()) / 60000;
 }
 
+// Gorgias templates send all values as strings — coerce IDs to numbers for Supabase bigint columns
+function toNum(v: unknown): number | null {
+  if (v == null) return null;
+  const n = Number(v);
+  return isNaN(n) ? null : n;
+}
+
 export async function POST(req: NextRequest) {
   // --- Security: verify shared secret ---
   const secret = req.nextUrl.searchParams.get('secret');
@@ -61,7 +68,7 @@ export async function POST(req: NextRequest) {
         const { data: existing } = await supabase
           .from('agent_behavior_log')
           .select('id')
-          .eq('ticket_id', ticket.id)
+          .eq('ticket_id', toNum(ticket.id))
           .eq('event_type', 'ticket-message-created');
 
         const isFirstReply = !existing || existing.length === 0;
@@ -77,19 +84,19 @@ export async function POST(req: NextRequest) {
         await supabase.from('agent_behavior_log').insert({
           event_id: `msg-${message.id}`,
           event_type: 'ticket-message-created',
-          ticket_id: ticket.id,
+          ticket_id: toNum(ticket.id),
           ticket_subject: ticket.subject ?? null,
           ticket_channel: ticket.channel ?? null,
           ticket_category: extractCategory(ticket.tags),
           ticket_tags: allTags.length > 0 ? allTags : null,
           ticket_created_at: ticket.created_datetime ?? null,
-          agent_id: message.sender?.id ?? null,
+          agent_id: toNum(message.sender?.id),
           agent_name: message.sender?.name ?? null,
           agent_email: message.sender?.email ?? null,
           response_text: message.body_text ?? null,
           response_char_count: message.body_text?.length ?? null,
           is_macro: macro !== null,
-          macro_id: macro?.id ?? null,
+          macro_id: toNum(macro?.id),
           macro_name: macro?.name ?? null,
           message_position: messagePosition,
           time_to_first_response_min: firstResponseMin,
@@ -107,10 +114,11 @@ export async function POST(req: NextRequest) {
 
         if (isClosed) {
           // Ticket closed — enrich existing rows with touches_to_resolution
+          const ticketId = toNum(ticket.id);
           const { count } = await supabase
             .from('agent_behavior_log')
             .select('*', { count: 'exact', head: true })
-            .eq('ticket_id', ticket.id)
+            .eq('ticket_id', ticketId)
             .eq('event_type', 'ticket-message-created');
 
           const touches = count ?? 0;
@@ -120,13 +128,13 @@ export async function POST(req: NextRequest) {
             await supabase
               .from('agent_behavior_log')
               .update({ touches_to_resolution: touches, resolved_at: resolvedAt })
-              .eq('ticket_id', ticket.id);
+              .eq('ticket_id', ticketId);
           } else {
             // Closed with no logged messages (spam auto-close etc.)
             await supabase.from('agent_behavior_log').insert({
               event_id: `close-${ticket.id}-${Date.now()}`,
               event_type: 'ticket-closed',
-              ticket_id: ticket.id,
+              ticket_id: ticketId,
               ticket_subject: ticket.subject ?? null,
               ticket_channel: ticket.channel ?? null,
               ticket_category: extractCategory(ticket.tags),
@@ -142,13 +150,13 @@ export async function POST(req: NextRequest) {
           await supabase.from('agent_behavior_log').insert({
             event_id: `assign-${ticket.id}-${Date.now()}`,
             event_type: 'ticket-assigned',
-            ticket_id: ticket.id,
+            ticket_id: toNum(ticket.id),
             ticket_subject: ticket.subject ?? null,
             ticket_channel: ticket.channel ?? null,
             ticket_category: extractCategory(ticket.tags),
             ticket_tags: ticket.tags?.map((t) => t.name) ?? null,
             ticket_created_at: ticket.created_datetime ?? null,
-            agent_id: assignee_user.id ?? null,
+            agent_id: toNum(assignee_user.id),
             agent_name: assignee_user.name ?? null,
             agent_email: assignee_user.email ?? null,
             raw_payload: payload,
@@ -163,7 +171,7 @@ export async function POST(req: NextRequest) {
         await supabase
           .from('agent_behavior_log')
           .update({ csat_score: satisfaction.score })
-          .eq('ticket_id', ticket.id);
+          .eq('ticket_id', toNum(ticket.id));
         break;
       }
 
