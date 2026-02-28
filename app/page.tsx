@@ -102,7 +102,34 @@ export default function SupportCommandCenter() {
         .select('*')
         .order('created_at', { ascending: false })
         .limit(30);
-      if (pulses) setPulseData(pulses);
+      if (pulses) {
+        const normalized = pulses.map((p) => ({
+          ...p,
+          top_questions: Array.isArray(p.top_questions)
+            ? p.top_questions
+            : typeof p.top_questions === 'string'
+            ? JSON.parse(p.top_questions)
+            : [],
+          ops_notes: Array.isArray(p.ops_notes)
+            ? p.ops_notes
+            : typeof p.ops_notes === 'string'
+            ? JSON.parse(p.ops_notes)
+            : [],
+          workload:
+            p.workload && typeof p.workload === 'object' && !Array.isArray(p.workload)
+              ? p.workload
+              : typeof p.workload === 'string'
+              ? JSON.parse(p.workload)
+              : {},
+          tags:
+            p.tags && typeof p.tags === 'object' && !Array.isArray(p.tags)
+              ? p.tags
+              : typeof p.tags === 'string'
+              ? JSON.parse(p.tags)
+              : {},
+        }));
+        setPulseData(normalized);
+      }
 
       // --- Fetch AI Performance Data ---
       const { data: roi } = await supabase.from('view_ai_roi_metrics').select('*').single();
